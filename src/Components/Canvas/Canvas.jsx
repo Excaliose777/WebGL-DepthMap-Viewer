@@ -2,7 +2,7 @@ import './Canvas.scss'
 import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from "react-icons/fa";
 import { Canvas } from '@react-three/fiber'
 
-import React, { Suspense, lazy, useState } from 'react'
+import React, { Suspense, lazy, useRef, useState } from 'react'
 
 const Scene = lazy(() => import('../R3F/Scene'))
 const SceneB = lazy(() => import('../R3F/SceneB'))
@@ -14,6 +14,7 @@ const SceneE = lazy(() => import('../R3F/SceneE'))
 
 const CanvasCover = () => {
   const [current, setCurrent] = useState(0)
+  const canvasRef = useRef()
   // console.log(tf)
   // console.log(depthEstimation)
 
@@ -39,7 +40,7 @@ const CanvasCover = () => {
 
       <div className='canvasMain'>
         <Suspense fallback={<div>Loading...</div>}>
-          <Canvas shadows camera={{ position: [0,0,8], fov: 30}}>
+          <Canvas shadows camera={{ position: [0,0,8], fov: 30}} ref={canvasRef}>
             <ambientLight/>
             <color attach="background" args={["#ececec"]} />
             <CurrentScene/>
