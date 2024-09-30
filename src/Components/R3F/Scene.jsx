@@ -1,4 +1,4 @@
-import { OrbitControls, OrthographicCamera, PerspectiveCamera, RenderTexture, useFBO, useGLTF } from '@react-three/drei'
+import { ContactShadows, Environment, OrbitControls, OrthographicCamera, PerspectiveCamera, RenderTexture, Sky, useFBO, useGLTF } from '@react-three/drei'
 import React, { useEffect, useMemo, useRef } from 'react'
 import {vertex} from '../Shaders/Vertex'
 import {fragment} from '../Shaders/Fragment'
@@ -65,7 +65,11 @@ const Scene = () => {
   return (
     <>
     <OrbitControls camera={camera}/>
-    <mesh >
+    <Sky sunPosition={[10, 10, 0]} />
+    <Environment preset="sunset" />
+    <directionalLight args={[10, 10, 0]} intensity={1} />
+    <ambientLight intensity={0.5} />
+        <mesh >
         <primitive object={model.scene} position={[0,-1,-1]} ref={meshRef}/>
         <shaderMaterial ref={shaderRef}
         vertexShader={vertex}

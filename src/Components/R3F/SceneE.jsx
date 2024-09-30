@@ -1,4 +1,4 @@
-import { OrbitControls, useGLTF } from '@react-three/drei'
+import { OrbitControls, Sky, useGLTF } from '@react-three/drei'
 import React, { useEffect, useRef } from 'react'
 import Cactoro from '../Models/Cactoro'
 
@@ -25,6 +25,9 @@ const SceneE = () => {
   return (
     <>
     <OrbitControls/>
+    <Sky sunPosition={[10, 10, 0]} />
+    <directionalLight args={[10, 10, 0]} intensity={1} />
+    <ambientLight intensity={0.5} />
     <mesh position={[0,-1.75,-1]} scale={[7,7,7]}>
       <primitive object={model.scene}/>
       {/* <Cactoro/> */}

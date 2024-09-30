@@ -1,4 +1,4 @@
-import { OrbitControls, useGLTF } from '@react-three/drei'
+import { OrbitControls, Sky, useGLTF } from '@react-three/drei'
 import React, { useEffect, useRef } from 'react'
 
 import {vertex} from '../Shaders/Vertex'
@@ -27,6 +27,9 @@ const SceneD = () => {
   return (
     <>
     <OrbitControls/>
+    <Sky sunPosition={[10, 10, 0]} />
+    <directionalLight args={[10, 10, 0]} intensity={1} />
+    <ambientLight intensity={0.5} />
     <mesh>
       <primitive object={model.scene}/>
       {/* <octahedronGeometry/> */}

@@ -1,4 +1,4 @@
-import { OrbitControls, useGLTF } from '@react-three/drei'
+import { ContactShadows, OrbitControls, Sky, useGLTF } from '@react-three/drei'
 import React, { useEffect, useRef } from 'react'
 
 import {vertex} from '../Shaders/Vertex'
@@ -28,6 +28,16 @@ const SceneB = () => {
   return (
     <>
     <OrbitControls/>
+    <Sky sunPosition={[10, 10, 0]} />
+    <directionalLight args={[10, 10, 0]} intensity={1} />
+    <ambientLight intensity={0.5} />
+    <ContactShadows
+      frames={1}
+      scale={10}
+      position={[0, -2, 0]}
+      blur={4}
+      opacity={0.2}
+    />
     <mesh castShadow position-y={.15}>
       <primitive object={model.scene}/>
       {/* <meshNormalMaterial ref={shaderRef}/> */}
@@ -39,7 +49,7 @@ const SceneB = () => {
     </mesh>
     <mesh receiveShadow position-y={-1} rotation-x={-Math.PI * 0.5} >
       <boxGeometry args={[15,15,0.35]}/>
-      <meshStandardMaterial color={'white'}/>
+      <meshStandardMaterial color={'grey'}/>
     </mesh>
     </>
   )
