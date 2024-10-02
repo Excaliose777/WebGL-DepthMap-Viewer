@@ -47,7 +47,7 @@ const Scene7 = () => {
       <OrbitControls />
       {createPortal(
         <>
-          <Sky sunPosition={[10, 10, 0]} />
+          {/* <Sky sunPosition={[10, 10, 0]} /> */}
           {/* <Environment preset="dawn" /> */}
           <directionalLight args={[10, 10, 0]} intensity={1} />
           <ambientLight intensity={1} />

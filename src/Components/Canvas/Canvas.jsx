@@ -20,7 +20,7 @@ const SceneE = lazy(() => import('../R3F/SceneE'))
 
 const CanvasCover = () => {
   const [current, setCurrent] = useState(0)
-  const scenes = [SceneB,Scene,SceneC, SceneD, SceneE]
+  const scenes = [Scene, SceneB,SceneC, SceneD, SceneE]
   const CurrentScene = scenes[current]
   
   // const canvasRef = useRef()
