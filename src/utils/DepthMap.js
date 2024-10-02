@@ -1,14 +1,14 @@
 import * as THREE from "three";
 
-const depthFragmentShader = `
-precision mediump float;
+const depthMapFragmentShader = `
+precision highp float;
 #include <packing>
 
 
 uniform float cameraNear;
 uniform float cameraFar;
 uniform sampler2D uTexture;
-uniform sampler2D u_depthTexture;
+uniform sampler2D uDepth;
 varying vec2 vUv;
 
 float LinearizeDepth(float depth) 
@@ -18,14 +18,14 @@ float LinearizeDepth(float depth)
 }
 
 void main(){
-  float depth = LinearizeDepth(gl_FragCoord.z) / cameraFar;
-  // float depth = texture2D(u_texture, vUv).x;
+  // float depth = LinearizeDepth(gl_FragCoord.z) / cameraFar;
+  float depth = texture2D(uTexture, vUv).x;
   gl_FragColor = vec4(vec3(depth),1.0);
 }
 
 `;
 
-const depthVertexShader = `
+const depthMapVertexShader = `
 varying vec2 vUv;
 
 
@@ -35,16 +35,22 @@ void main() {
 }
 `;
 
-class DepthMaterial extends THREE.ShaderMaterial {
+class DepthTextureMaterial extends THREE.ShaderMaterial {
   constructor() {
     super({
       uniforms: {
         uTexture: {
           value: null,
         },
-        u_depthTexture: { value: new THREE.DepthTexture() },
-        cameraNear: { value: null },
-        cameraFar: { value: null },
+        uDepth: {
+          value: null,
+        },
+        cameraNear: {
+          value: null,
+        },
+        cameraFar: {
+          value: null,
+        },
         winResolution: {
           value: new THREE.Vector2(
             window.innerWidth,
@@ -52,8 +58,8 @@ class DepthMaterial extends THREE.ShaderMaterial {
           ).multiplyScalar(Math.min(window.devicePixelRatio, 2)),
         },
       },
-      vertexShader: depthVertexShader,
-      fragmentShader: depthFragmentShader,
+      vertexShader: depthMapVertexShader,
+      fragmentShader: depthMapFragmentShader,
       blending: THREE.NoBlending,
       depthWrite: false,
       depthTest: false,
@@ -61,4 +67,4 @@ class DepthMaterial extends THREE.ShaderMaterial {
   }
 }
 
-export default DepthMaterial;
+export default DepthTextureMaterial;

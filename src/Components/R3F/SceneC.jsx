@@ -1,45 +1,77 @@
-import { ContactShadows, OrbitControls, Sky, useGLTF } from '@react-three/drei'
-import React, { useEffect, useRef } from 'react'
+import { OrbitControls,
+  OrthographicCamera, 
+  Sky, 
+  Environment, 
+  useFBO,
+  useGLTF,
+} from "@react-three/drei";
+import { useFrame, createPortal, extend } from "@react-three/fiber";
+import { useRef, useMemo } from "react";
+import * as THREE from "three";
+import { v4 as uuidv4 } from "uuid";
 
-import {vertex} from '../Shaders/Vertex'
-import {fragment} from '../Shaders/Fragment'
+import getFullscreenTriangle from '../../utils/getfullScreen';
+import DepthTextureMaterial from '../../utils/DepthMap'
 
-const SceneC = () => {
-  const shaderRef = useRef()
+extend({ DepthTextureMaterial });
 
-const model = useGLTF('./models/medieval_three_headed_0928184913_refine.glb')
+const Scene7 = () => {
+  const screenMesh = useRef();
+  const screenCamera = useRef();
 
-const uniforms = useRef({
-  u_texture: {value:null}
-})
+  const magicScene = new THREE.Scene();  
+  const depthMapMaterialRef = useRef()
 
-useEffect(() => {
-  model.scene.traverse((child) => {
-    if (child.isMesh) {
-      uniforms.current.u_texture.value = child.material.map
-      child.material = shaderRef.current;
-    }
+  const renderTarget = useFBO({depthTexture: new THREE.DepthTexture()});
+
+  const model = useGLTF('./models/medieval_three_headed_0928184913_refine.glb')
+
+  useFrame((state) => {
+    const { gl, scene, camera, clock } = state;
+
+    // POST-PROCESSING PASS
+    gl.setRenderTarget(renderTarget);
+    gl.render(magicScene, camera);
+
+    depthMapMaterialRef.current.uniforms.cameraNear.value = camera.near;
+    depthMapMaterialRef.current.uniforms.cameraFar.value = camera.far;
+    depthMapMaterialRef.current.uniforms.uTexture.value = renderTarget.texture;
+    depthMapMaterialRef.current.uniforms.uDepth.value =renderTarget.depthTexture;
+    screenMesh.current.material = depthMapMaterialRef.current;
+
+    gl.setRenderTarget(null);
   });
-
-}, [model]);
 
   return (
     <>
-    <OrbitControls/>
-    <Sky sunPosition={[10, 10, 0]} />
-    <directionalLight args={[10, 10, 0]} intensity={1} />
-    <ambientLight intensity={0.5} />
-    <mesh>
-      <primitive object={model.scene}/>
-      {/* <torusGeometry/> */}
-      <shaderMaterial ref={shaderRef}
-        vertexShader={vertex}
-        fragmentShader={fragment}
-        uniforms={uniforms.current}
-      />
-    </mesh>
-    </>
-  )
-}
+      <OrbitControls />
+      {createPortal(
+        <>
+          <Sky sunPosition={[10, 10, 0]} />
+          {/* <Environment preset="dawn" /> */}
+          <directionalLight args={[10, 10, 0]} intensity={1} />
+          <ambientLight intensity={1} />
+          <mesh>
+            <primitive object={model.scene}/>
+          </mesh>
+          <mesh receiveShadow position-y={-1.3} rotation-x={-Math.PI * 0.5} >
+            <boxGeometry args={[15,15,0.35]}/>
+            <meshStandardMaterial color={'grey'}/>
+          </mesh>
+        </>,
+        magicScene
+      )}
 
-export default SceneC
+      <OrthographicCamera ref={screenCamera} args={[-1, 1, 1, -1, 0, 1]} />
+      <depthTextureMaterial ref={depthMapMaterialRef}/>
+      <mesh
+        ref={screenMesh}
+        geometry={getFullscreenTriangle()}
+        frustumCulled={true}
+      />
+    </>
+  );
+};
+
+
+export default Scene7

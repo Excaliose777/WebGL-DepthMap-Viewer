@@ -1,45 +1,73 @@
-import { OrbitControls, Sky, useGLTF } from '@react-three/drei'
-import React, { useEffect, useRef } from 'react'
-import Cactoro from '../Models/Cactoro'
+import { OrbitControls,
+  OrthographicCamera, 
+  Sky, 
+  Environment, 
+  useFBO,
+  useGLTF,
+} from "@react-three/drei";
+import { useFrame, createPortal, extend } from "@react-three/fiber";
+import { useRef, useMemo } from "react";
+import * as THREE from "three";
+import { v4 as uuidv4 } from "uuid";
 
-import {vertex} from '../Shaders/Vertex'
-import {fragment} from '../Shaders/Fragment'
+import getFullscreenTriangle from '../../utils/getfullScreen';
+import DepthTextureMaterial from '../../utils/DepthMap'
 
-const SceneE = () => {
-  const shaderRef = useRef()
+extend({ DepthTextureMaterial });
+
+const Scene7 = () => {
+  const screenMesh = useRef();
+  const screenCamera = useRef();
+
+  const magicScene = new THREE.Scene();  
+  const depthMapMaterialRef = useRef()
+
+  const renderTarget = useFBO({depthTexture: new THREE.DepthTexture()});
+
   const model = useGLTF('./models/marble_bust_01_1k.gltf/marble_bust_01_1k.gltf')
-  const uniforms = useRef({
-    u_texture: {value:null}
-  })
 
-  useEffect(() => {
-    model.scene.traverse((child) => {
-      if (child.isMesh) {
-        uniforms.current.u_texture.value = child.material.map
-        child.material = shaderRef.current;
-      }
-    });
+  useFrame((state) => {
+    const { gl, scene, camera, clock } = state;
 
-  }, [model]);
+    // POST-PROCESSING PASS
+    gl.setRenderTarget(renderTarget);
+    gl.render(magicScene, camera);
+
+    depthMapMaterialRef.current.uniforms.cameraNear.value = camera.near;
+    depthMapMaterialRef.current.uniforms.cameraFar.value = camera.far;
+    depthMapMaterialRef.current.uniforms.uTexture.value = renderTarget.texture;
+    depthMapMaterialRef.current.uniforms.uDepth.value =renderTarget.depthTexture;
+    screenMesh.current.material = depthMapMaterialRef.current;
+
+    gl.setRenderTarget(null);
+  });
 
   return (
     <>
-    <OrbitControls/>
-    <Sky sunPosition={[10, 10, 0]} />
-    <directionalLight args={[10, 10, 0]} intensity={1} />
-    <ambientLight intensity={0.5} />
-    <mesh position={[0,-1.75,-1]} scale={[7,7,7]}>
-      <primitive object={model.scene}/>
-      {/* <Cactoro/> */}
-      {/* <meshNormalMaterial ref={shaderRef}/> */}
-      <shaderMaterial ref={shaderRef}
-        vertexShader={vertex}
-        fragmentShader={fragment}
-        uniforms={uniforms.current}
-      />
-    </mesh>
-    </>
-  )
-}
+      <OrbitControls />
+      {createPortal(
+        <>
+          <Sky sunPosition={[10, 10, 0]} />
+          {/* <Environment preset="park" /> */}
+          <directionalLight args={[10, 10, 0]} intensity={1} />
+          <ambientLight intensity={1} />
+          <mesh position={[0,-1.75,-1]} scale={[7,7,7]}>
+            <primitive object={model.scene}/>
+          </mesh>
+        </>,
+        magicScene
+      )}
 
-export default SceneE
+      <OrthographicCamera ref={screenCamera} args={[-1, 1, 1, -1, 0, 1]} />
+      <depthTextureMaterial ref={depthMapMaterialRef}/>
+      <mesh
+        ref={screenMesh}
+        geometry={getFullscreenTriangle()}
+        frustumCulled={true}
+      />
+    </>
+  );
+};
+
+
+export default Scene7

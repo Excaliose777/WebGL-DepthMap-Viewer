@@ -9,6 +9,7 @@ import { Canvas } from '@react-three/fiber'
 // import { useEffect } from 'react';
 
 import React, { Suspense, lazy, useRef, useState } from 'react'
+import { OrbitControls } from '@react-three/drei';
 
 const Scene = lazy(() => import('../R3F/Scene'))
 const SceneB = lazy(() => import('../R3F/SceneB'))
@@ -57,9 +58,8 @@ const CanvasCover = () => {
 
       <div className='canvasMain'>
         <Suspense fallback={<div>Loading...</div>}>
-          <Canvas shadows camera={{ position: [0,0,6], fov: 30}}>
-            <ambientLight/>
-            <color attach="background" args={["#ececec"]} />
+          <Canvas shadows camera={{ position: [0,0,4]}} dpr={[1,2]}>
+            <OrbitControls/>
             <CurrentScene/>
           </Canvas>
         </Suspense>
